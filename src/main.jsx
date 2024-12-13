@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import './index.css'
 import AlertState from './context/alert/AlertState.jsx'
-import LoadingState from './context/loading/loadingState.jsx'
+import LoadingState from './context/loading/LoadingState.jsx'
 import CourseState from './context/courseDetail/CourseState.jsx'
 
 createRoot(document.getElementById('root')).render(
