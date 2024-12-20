@@ -79,22 +79,26 @@ export default function Message() {
 
       {/* Student List */}
       <ul className="list-group">
-        {students.map((student) => (
-          <li key={student._id} className="list-group-item d-flex flex-column flex-md-row flex-wrap justify-content-between align-items-start my-2">
-            <div className="mb-2 mb-md-0">
-              <strong>Name:</strong> {student.name} <br />
-              <strong>Email:</strong> {student.email} <br />
-              <strong>Phone:</strong> {student.phone} <br />
-              <strong>Course:</strong> {student.course} <br />
-              <strong>Gender:</strong> {student.gender} <br />
-              <strong>DOB:</strong> {student.dob} <br />
-              <strong>Address:</strong> {student.address}
-            </div>
-            <div className="mt-2 mt-md-0">
-              <button className="btn btn-primary btn-sm" onClick={() => openModal(student)}>Send Message</button>
-            </div>
-          </li>
-        ))}
+        {students.filter(student => student.enrolled === true).length > 0 ? (
+          students.filter(student => student.enrolled === true).map((student) => (
+            <li key={student._id} className="list-group-item d-flex flex-column flex-md-row flex-wrap justify-content-between align-items-start my-2">
+              <div className="mb-2 mb-md-0">
+                <strong>Name:</strong> {student.name} <br />
+                <strong>Email:</strong> {student.email} <br />
+                <strong>Phone:</strong> {student.phone} <br />
+                <strong>Course:</strong> {student.course} <br />
+                <strong>Gender:</strong> {student.gender} <br />
+                <strong>DOB:</strong> {student.dob} <br />
+                <strong>Address:</strong> {student.address}
+              </div>
+              <div className="mt-2 mt-md-0">
+                <button className="btn btn-primary btn-sm" onClick={() => openModal(student)}>Send Message</button>
+              </div>
+            </li>
+          ))
+        ) : (
+          <p className="text-center my-3">No records to show</p>
+        )}
       </ul>
 
       {/* Modal */}

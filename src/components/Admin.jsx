@@ -3,6 +3,7 @@ import Notifications from "./Notification";
 import Message from "./Message";
 import StudentsRecord from "./StudentsRecord";
 import AddStudent from './AddStudent';
+import EnrollStudent from './EnrollStudent';
 import { useNavigate } from "react-router-dom";
 
 export default function Admin() {
@@ -19,6 +20,8 @@ export default function Admin() {
         return <StudentsRecord />;
       case "addStudent":
         return <AddStudent />;
+      case "enrollStudent":
+        return <EnrollStudent />;
       default:
         return <Notifications />;
     }
@@ -53,6 +56,11 @@ export default function Admin() {
         <li className="nav-item">
           <button className={`nav-link ${activeTab === "addStudent" ? "active" : ""}`} onClick={() => setActiveTab("addStudent")} style={{color: 'black'}}>
             Add Student
+          </button>
+        </li>
+        <li className="nav-item">
+          <button className={`nav-link ${activeTab === "enrollStudent" ? "active" : ""}`} onClick={() => setActiveTab("enrollStudent")} style={{color: 'black'}}>
+            New Registraion Enquiry
           </button>
         </li>
       </ul>

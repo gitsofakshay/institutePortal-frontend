@@ -1,16 +1,14 @@
 import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
 import alertContext from "../context/alert/alertContext";
 import loadingContext from "../context/loading/loadingContext";
 
 export default function AddStudent() {
-    const [newStudent, setNewStudent] = useState({ name: "", dob: "", email: "", phone: "", gender: "", course: "", address: "" });
+    const [newStudent, setNewStudent] = useState({ name: "", dob: "", email: "", phone: "", gender: "", course: "", address: "" , enrolled: true});
     const api_url = import.meta.env.VITE_URL;
     const alertcontext = useContext(alertContext);
     const loadingcontext = useContext(loadingContext);
     const { showAlert } = alertcontext;
     const { setLoading } = loadingcontext;
-    const navigate = useNavigate();
 
     const addStudent = async () => {
         setLoading(true);

@@ -19,24 +19,39 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email: email, password: password }),
-        });
-
-        const json = await response.json();
-        setLoading(false);
-        if (json.success) {
-            showAlert(json.msg, 'success');
-            ref.current.click();
-        } else {
-            showAlert(json.error, 'danger');
+    
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: email, password: password }),
+            });
+    
+            if (!response.ok) {
+                // Handle HTTP errors like 400, 500, etc.
+                const errorMsg = `Error: ${response.status} - ${response.statusText}`;
+                throw new Error(errorMsg);
+            }
+    
+            const json = await response.json();
+    
+            if (json.success) {
+                showAlert(json.msg, "success");
+                ref.current.click();
+            } else {
+                showAlert(json.error || "An unknown error occurred.", "danger");
+            }
+        } catch (error) {
+            // Handle network or unexpected errors
+            console.error("Login failed:", error);
+            showAlert("Failed to login. Please try again later.", "danger");
+        } finally {
+            setLoading(false); // Ensure loading state is always reset
         }
-    }
-
+    };
+    
     const verifyOtp = async (e) => {
         e.preventDefault();
         //api request for verification of otp
@@ -58,7 +73,7 @@ export default function Login() {
             showAlert(resStatus.msg, 'success')
             navigate('/admin')
         } else {
-            showAlert(resStatus.error, 'danger');
+            showAlert(resStatus.message, 'danger');
         }
         setCredentials({ email: "", password: "", otp: "" });
     }
@@ -67,23 +82,23 @@ export default function Login() {
         setCredentials({ ...credentials, [e.target.name]: e.target.value });
     }
 
-    const changePassword = () => {
-        showAlert('Password change fecility will be added soon', 'info');
-        navigate('/login');
-        // ref.current.click();
-    }
+    // const changePassword = () => {
+    //     showAlert('Password change fecility will be added soon', 'info');
+    //     navigate('/login');
+    //     // ref.current.click();
+    // }
 
-    const changeEmail = () => {
-        showAlert('Email change fecility will be added soon', 'info');
-        navigate('/login');
-        // ref.current.click();
-    }
+    // const changeEmail = () => {
+    //     showAlert('Email change fecility will be added soon', 'info');
+    //     navigate('/login');
+    //     // ref.current.click();
+    // }
     return (
         <>
             <div className='container'>
                 <h2 className='text-center my-5'>Login As a Admin</h2>
                 <div className='container' style={{ maxWidth: "600px" }}>
-                    <form onSubmit={handleSubmit}>
+                    <form>
                         <div className="mb-3">
                             <label htmlFor="email" className="form-label">Email address</label>
                             <input type="email" className="form-control" id="email" name='email' value={credentials.email} onChange={onChange} aria-describedby="emailHelp" required />
@@ -92,9 +107,9 @@ export default function Login() {
                             <label htmlFor="password" className="form-label">Password</label>
                             <input type="password" className="form-control" id="password" name='password' value={credentials.password} onChange={onChange} required />
                         </div>
-                        <button type="submit" className="btn btn-primary mx-2 my-2">Login</button>
-                        <button className="btn btn-primary mx-2 my-2" onClick={changePassword}>Change Password</button>
-                        <button className="btn btn-primary my-2" onClick={changeEmail}>Change Email</button>
+                        <button type="submit" className="btn btn-primary mx-2 my-2" onClick={handleSubmit}>Login</button>
+                        {/* <button className="btn btn-primary mx-2 my-2" onClick={changePassword}>Change Password</button>
+                        <button className="btn btn-primary my-2" onClick={changeEmail}>Change Email</button> */}
                     </form>
                 </div>
             </div>

@@ -12,6 +12,7 @@ import Loading from './components/Loading'
 import alertContext from './context/alert/alertContext'
 import loadingContext from './context/loading/loadingContext'
 import CourseDetail from './components/CourseDetail'
+import UpdateStudent from './components/UpdateStudent'
 
 function App() {
   const alertcontext = useContext(alertContext);
@@ -36,6 +37,7 @@ function App() {
           <Route path='/admin' element={<Admin />} />
           <Route path='/login' element={<Login />} />
           <Route path="/course/:id" element={<CourseDetail />} />
+          <Route path='/updateRecord' element={<UpdateStudent />} />
         </Routes>
     </>
   )
