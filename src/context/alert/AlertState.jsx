@@ -16,6 +16,6 @@ export default function AlertState(props) {
     return (
         <AlertContext.Provider value={{ alert, showAlert }}>
             {props.children}
-        </AlertContext.Provider>
+        </AlertContext.Provider> 
     )
 }

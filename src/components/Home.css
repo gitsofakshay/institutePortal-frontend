@@ -8,30 +8,4 @@ img{
     border-radius: 8px;
     height: 600px;
 }
-
-/* Marquee container to manage overflow and hide content when scrolling */
-  /* Marquee text styling */
-  .marquee p {
-    color: red;
-    margin: 0;
-    font-size: 2rem; /* Adjust font size */
-    animation: marquee 15s linear infinite;
-  }
-  
-  /* Define animation for scrolling effect */
-  @keyframes marquee {
-    0% {
-      transform: translateX(100%); /* Start off to the right */
-    }
-    100% {
-      transform: translateX(-100%); /* End off to the left */
-    }
-  }
-  
-  /* Media Queries for Responsiveness */
-  @media (max-width: 768x) {
-    .marquee p {
-      font-size: 1rem;  /* Smaller font size for smaller screens */
-    }
-  }
   

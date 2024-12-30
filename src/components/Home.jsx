@@ -14,11 +14,6 @@ export default function Home() {
   return (
     <div >
       <img src={Logo} alt="" id='logo' />
-      <div className="marquee">
-        <p>
-          This site is in under development!!!
-        </p>
-      </div>
       <h1 className='text-center mb-3' >Maharaja Agrasen Institute Maihar</h1>
       <div className="container-sm mb-5 text-center" style={{ "fontSize": "1.2rem" }}>
         "Empowering Future Leaders Through Quality Education and Innovation – Maharaja Agrasen Institute, Maihar"

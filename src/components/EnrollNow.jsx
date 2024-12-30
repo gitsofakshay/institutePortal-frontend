@@ -11,27 +11,33 @@ export default function EnrollNow() {
   const { setLoading } = loadingcontext;
   const [newStudent, setNewStudent] = useState({ name: "", dob: "", email: "", phone: "", gender: "", course: "", address: "", enrolled: false });
 
+  //enrolling student for admission enquiry
   const enrollStudent = async () => {
     setLoading(true);
-    await fetch(`${api_url}/students/enrollstudent`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newStudent),
-    })
-      .then((response) => response.json())
-      .then((student) => {
-        setLoading(false);
-        showAlert(student.msg, 'success');
-        setNewStudent({ name: "", dob: "", email: "", phone: "", gender: "", course: "", address: "", enrolled: false});
-      })
-      .catch((error) => {
-        setLoading(false);
-        showAlert(error.message, 'danger');
-        setNewStudent({ name: "", dob: "", email: "", phone: "", gender: "", course: "", address: "", enrolled: false});
+    try {
+      const response = await fetch(`${api_url}/students/enrollstudent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newStudent),
       });
+
+      const student = await response.json();
+
+      if (response.ok) {
+        showAlert(student.msg, 'success');
+        setNewStudent({ name: "", dob: "", email: "", phone: "", gender: "", course: "", address: "", enrolled: false });
+      } else {
+        showAlert(student.msg || 'Enrollment failed', 'danger');
+      }
+    } catch (error) {
+      showAlert(error.message, 'danger');
+    } finally {
+      setLoading(false);
+    }
   }
+
   return (
     <div className='container' style={{ maxWidth: "800px" }}>
       <h1 className='text-center my-5'>Register for enquiry</h1>

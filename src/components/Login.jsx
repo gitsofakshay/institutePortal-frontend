@@ -1,10 +1,11 @@
 import { React, useState, useRef, useContext } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { json, useNavigate } from 'react-router-dom';
 import alertContext from "../context/alert/alertContext";
 import loadingContext from "../context/loading/loadingContext";
 
 export default function Login() {
-    const [credentials, setCredentials] = useState({ email: "", password: "", otp: "" });
+    const [credentials, setCredentials] = useState({ email: "", password: "", otp: "", title: "Login" });
+    const [errorMsg, setErrorMsg] = useState("An unknownn error occured");
     const API_URL = import.meta.env.VITE_URL;
     const navigate = useNavigate();
     const ref = useRef(null);
@@ -14,85 +15,85 @@ export default function Login() {
     const { showAlert } = alertcontext;
     const { setLoading } = loadingcontext;
 
-    const { email, otp, password } = credentials;
+    const { email, otp, password, title } = credentials;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    //api request to login
+    const handleSubmit = async () => {
         setLoading(true);
-    
         try {
             const response = await fetch(`${API_URL}/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ email: email, password: password }),
+                body: JSON.stringify({ email: email, password: password, otp: otp }),
             });
-    
-            if (!response.ok) {
-                // Handle HTTP errors like 400, 500, etc.
-                const errorMsg = `Error: ${response.status} - ${response.statusText}`;
-                throw new Error(errorMsg);
-            }
-    
+
             const json = await response.json();
-    
+            setErrorMsg(json.msg)
+            setLoading(false);
             if (json.success) {
+                refClose.current.click();// close the modal    
+                //Save the auth token and redirect to adming page
+                localStorage.setItem('token', json.authToken)
+                navigate('/admin')
                 showAlert(json.msg, "success");
-                ref.current.click();
+                setCredentials({ email: "", password: "", otp: "", title: "Login" });
             } else {
-                showAlert(json.error || "An unknown error occurred.", "danger");
+                showAlert(json.msg, "danger");
             }
         } catch (error) {
+            setLoading(false); // Ensure loading state is always reset
             // Handle network or unexpected errors
             console.error("Login failed:", error);
-            showAlert("Failed to login. Please try again later.", "danger");
-        } finally {
-            setLoading(false); // Ensure loading state is always reset
+            showAlert(errorMsg, "danger");
         }
     };
-    
-    const verifyOtp = async (e) => {
-        e.preventDefault();
-        //api request for verification of otp
-        setLoading(true);
-        const response = await fetch(`${API_URL}/auth/verifyotp`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: email, otp: otp }),
-        });
 
-        const resStatus = await response.json();
-        setLoading(false);
-        if (resStatus.success) {
-            refClose.current.click(); //close the modal
-            //Save the auth token and redirect
-            localStorage.setItem('token', resStatus.authToken)
-            showAlert(resStatus.msg, 'success')
-            navigate('/admin')
-        } else {
-            showAlert(resStatus.message, 'danger');
+    //api request to send otp
+    const sendOtp = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_URL}/auth/sendotp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email, password: password, title: title }),
+            });
+
+            const resStatus = await response.json();
+            setErrorMsg(resStatus.msg)
+            setLoading(false);
+            if (resStatus.success) {
+                ref.current.click(); //open modal to enter otp
+                showAlert(resStatus.msg, 'success')                
+            } else {
+                showAlert(resStatus.msg, 'danger');
+            }
+        } catch (error) {
+            setLoading(false);
+            // Handle network or unexpected errors
+            console.error("Login failed:", error);
+            showAlert(errorMsg, "danger");            
         }
-        setCredentials({ email: "", password: "", otp: "" });
     }
 
+    //handle input change
     const onChange = (e) => {
         setCredentials({ ...credentials, [e.target.name]: e.target.value });
     }
 
-    // const changePassword = () => {
-    //     showAlert('Password change fecility will be added soon', 'info');
-    //     navigate('/login');
-    //     // ref.current.click();
-    // }
+    //redirect to change password page
+    const changePassword = () => {
+        navigate('/changePassword');
+    }
 
-    // const changeEmail = () => {
-    //     showAlert('Email change fecility will be added soon', 'info');
-    //     navigate('/login');
-    //     // ref.current.click();
-    // }
+    //redirect to change email page
+    const changeEmail = () => {
+        navigate('/changeEmail');
+    }
+
     return (
         <>
             <div className='container'>
@@ -107,9 +108,9 @@ export default function Login() {
                             <label htmlFor="password" className="form-label">Password</label>
                             <input type="password" className="form-control" id="password" name='password' value={credentials.password} onChange={onChange} required />
                         </div>
-                        <button type="submit" className="btn btn-primary mx-2 my-2" onClick={handleSubmit}>Login</button>
-                        {/* <button className="btn btn-primary mx-2 my-2" onClick={changePassword}>Change Password</button>
-                        <button className="btn btn-primary my-2" onClick={changeEmail}>Change Email</button> */}
+                        <button type="button" className="btn btn-primary mx-2 my-2" onClick={sendOtp}>Login</button>
+                        <button className="btn btn-primary mx-2 my-2" onClick={changePassword}>Change Password</button>
+                        <button className="btn btn-primary my-2" onClick={changeEmail}>Change Email</button>
                     </form>
                 </div>
             </div>
@@ -135,7 +136,7 @@ export default function Login() {
                         </div>
                         <div className="modal-footer">
                             <button ref={refClose} type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button disabled={otp.length < 5} type="button" className="btn btn-primary" onClick={verifyOtp}>Verify OTP</button>
+                            <button disabled={otp.length < 5} type="button" className="btn btn-primary" onClick={handleSubmit}>Verify OTP</button>
                         </div>
                     </div>
                 </div>

@@ -1,42 +1,55 @@
 import React, { useState, useEffect, useContext } from "react";
 import alertContext from "../context/alert/alertContext";
 import loadingContext from "../context/loading/loadingContext";
+import FetchContext from "../context/fetchStudentRecord/fetchContex";
 
 export default function Message() {
-  const [students, setStudents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [filteredStudents, setFilteredStudents] = useState([]); // State for filtered students
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [message, setMessage] = useState("");
   const api_url = import.meta.env.VITE_URL;
+  const { students, fetchStuRecord } = useContext(FetchContext);
   const alertcontext = useContext(alertContext);
   const loadingcontext = useContext(loadingContext);
   const { showAlert } = alertcontext;
   const { setLoading } = loadingcontext;
 
-  // Fetch student data (mocked API call)
+  // Fetch student data (API call)
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${api_url}/students/fetchstudents`, {
-          method: "GET",
-          headers: {
-            "auth-token": localStorage.getItem('token'),
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
-        const json = await response.json();
-        setLoading(false);
-        setStudents(json);
-      } catch (err) {
-        setLoading(false);
-        showAlert(err.message, 'danger');
-      }
-    }
-
-    fetchData();
+    fetchStuRecord();
   }, []);
+
+  useEffect(() => {
+    setFilteredStudents(students); // Initially, all students are displayed
+  }, [students]);
+
+  // Debounce function
+  const debounce = (func, delay) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  // Handle search query changes
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    debounceFilterStudents(value);
+  };
+
+  // Filter students based on the search query
+  const filterStudents = (query) => {
+    const filtered = students.filter((student) =>
+      student.name.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredStudents(filtered);
+  };
+
+  // Debounced version of filterStudents
+  const debounceFilterStudents = debounce(filterStudents, 300);
 
   // Open modal for specific student
   const openModal = (student) => {
@@ -47,7 +60,7 @@ export default function Message() {
   // Send the message
   const sendMessage = () => {
     if (!message.trim()) {
-      alert("Message cannot be empty.");
+      showAlert("Message cannot be empty.",'danger');
       return;
     }
 
@@ -70,17 +83,24 @@ export default function Message() {
       .catch((error) => {
         setLoading(false);
         showAlert(error.message, 'danger');
+        console.error("Error sending message:", error);
       });
   };
 
   return (
-    <div>
+    <div className="container">
       <h2 className="text-center mb-4">Send Messages to Students</h2>
-
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <div className="input-group">
+            <input type="text" className="form-control" placeholder="Search..." aria-label="Search" aria-describedby="search-button" value={searchQuery} onChange={handleSearchChange} />
+          </div>
+        </div>
+      </div>
       {/* Student List */}
       <ul className="list-group">
-        {students.filter(student => student.enrolled === true).length > 0 ? (
-          students.filter(student => student.enrolled === true).map((student) => (
+        {filteredStudents.filter((student) => student.enrolled === true).length > 0 ? (
+          filteredStudents.filter((student) => student.enrolled === true).map((student) => (
             <li key={student._id} className="list-group-item d-flex flex-column flex-md-row flex-wrap justify-content-between align-items-start my-2">
               <div className="mb-2 mb-md-0">
                 <strong>Name:</strong> {student.name} <br />

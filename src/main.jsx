@@ -6,15 +6,18 @@ import './index.css'
 import AlertState from './context/alert/AlertState.jsx'
 import LoadingState from './context/loading/LoadingState.jsx'
 import CourseState from './context/courseDetail/CourseState.jsx'
+import FetchState from './context/fetchStudentRecord/fetchState.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <LoadingState>
       <AlertState>
         <CourseState>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+          <FetchState>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </FetchState>
         </CourseState>
       </AlertState>
     </LoadingState>

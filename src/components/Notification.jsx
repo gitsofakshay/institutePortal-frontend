@@ -1,18 +1,20 @@
 import React, { useContext, useState } from "react";
 import alertContext from "../context/alert/alertContext";
 import loadingContext from "../context/loading/loadingContext";
+import FetchContext from "../context/fetchStudentRecord/fetchContex";
 
 export default function Notification() {
   const [message, setMessage] = useState("");
   const api_url = import.meta.env.VITE_URL;
   const alertcontext = useContext(alertContext);
   const loadingcontext = useContext(loadingContext);
+  const fetchContext = useContext(FetchContext);
   const { showAlert } = alertcontext;
   const { setLoading } = loadingcontext;
+  const { fetchNotification } = fetchContext;
 
-
+  // Send notification to all users
   const sendNotification = () => {
-    // Example API call
     setLoading(true);
     fetch(`${api_url}/send-message/notification`, {
       method: "POST",
@@ -27,10 +29,12 @@ export default function Notification() {
         setLoading(false);
         showAlert(data.msg, 'success');
         setMessage("");
+        fetchNotification(); // Update notifications context state
       })
       .catch((error) => {
         setLoading(false);
-        showAlert(error, 'danger');
+        showAlert(error.message, 'danger');
+        console.log("Error sending notification:", error);
       });
   };
 

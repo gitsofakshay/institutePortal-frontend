@@ -13,6 +13,8 @@ import alertContext from './context/alert/alertContext'
 import loadingContext from './context/loading/loadingContext'
 import CourseDetail from './components/CourseDetail'
 import UpdateStudent from './components/UpdateStudent'
+import ChangeEmail from './components/ChangeEmail'
+import ChangePassword from './components/ChangePassword'
 
 function App() {
   const alertcontext = useContext(alertContext);
@@ -38,6 +40,8 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path="/course/:id" element={<CourseDetail />} />
           <Route path='/updateRecord' element={<UpdateStudent />} />
+          <Route path='/changePassword' element = {<ChangePassword />} />
+          <Route path='/changeEmail' element={<ChangeEmail />} />
         </Routes>
     </>
   )
