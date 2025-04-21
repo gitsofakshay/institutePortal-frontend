@@ -15,6 +15,10 @@ import CourseDetail from './components/CourseDetail'
 import UpdateStudent from './components/UpdateStudent'
 import ChangeEmail from './components/ChangeEmail'
 import ChangePassword from './components/ChangePassword'
+import Signup from './components/Signup'
+import StudentDashboard from './components/StudentDashboard'
+import FacultyDashboard from './components/FacultyDashboard'
+import FacultyRecord from './components/FacultyRecords'
 
 function App() {
   const alertcontext = useContext(alertContext);
@@ -38,10 +42,14 @@ function App() {
           <Route path='/EnrollNow' element={<EnrollNow />} />
           <Route path='/admin' element={<Admin />} />
           <Route path='/login' element={<Login />} />
+          <Route path="/faculty" element={<FacultyRecord />} />
           <Route path="/course/:id" element={<CourseDetail />} />
           <Route path='/updateRecord' element={<UpdateStudent />} />
           <Route path='/changePassword' element = {<ChangePassword />} />
           <Route path='/changeEmail' element={<ChangeEmail />} />
+          <Route path='/signup' element={<Signup />} />
+          <Route path="/student/:studentId" element={<StudentDashboard />} />
+          <Route path="/faculty/:facultyId" element={<FacultyDashboard />} />
         </Routes>
     </>
   )

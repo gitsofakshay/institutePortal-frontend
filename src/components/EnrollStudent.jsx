@@ -1,28 +1,25 @@
-import React, { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useMemo } from "react";
 import alertContext from "../context/alert/alertContext";
 import loadingContext from "../context/loading/loadingContext";
 import FetchContext from "../context/fetchStudentRecord/fetchContex";
 
 export default function AddStudent() {
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
-  const [filteredStudents, setFilteredStudents] = useState([]); // State for filtered students
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredStudents, setFilteredStudents] = useState([]);
   const api_url = import.meta.env.VITE_URL;
-  const { students, setStudents, fetchStuRecord } = useContext(FetchContext);
-  const alertcontext = useContext(alertContext);
-  const loadingcontext = useContext(loadingContext);
-  const { showAlert } = alertcontext;
-  const { setLoading } = loadingcontext;
 
-  // Fetch student data (API call)
+  const { students, setStudents, fetchStuRecord } = useContext(FetchContext);
+  const { showAlert } = useContext(alertContext);
+  const { setLoading } = useContext(loadingContext);
+
   useEffect(() => {
     fetchStuRecord();
-  }, []);
+  },[]);
 
   useEffect(() => {
-    setFilteredStudents(students); // Initially, all students are displayed
+    setFilteredStudents(students);
   }, [students]);
 
-  // Debounce function
   const debounce = (func, delay) => {
     let timer;
     return (...args) => {
@@ -31,14 +28,12 @@ export default function AddStudent() {
     };
   };
 
-  // Handle search query changes
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchQuery(value);
     debounceFilterStudents(value);
   };
 
-  // Filter students based on the search query
   const filterStudents = (query) => {
     const filtered = students.filter((student) =>
       student.name.toLowerCase().includes(query.toLowerCase())
@@ -46,41 +41,41 @@ export default function AddStudent() {
     setFilteredStudents(filtered);
   };
 
-  // Debounced version of filterStudents
-  const debounceFilterStudents = debounce(filterStudents, 300);
+  const debounceFilterStudents = useMemo(() => debounce(filterStudents, 300), [students]);
+
 
   const enrollStudent = async (student) => {
     setLoading(true);
     const updatedStudent = { ...student, enrolled: true };
-    await fetch(`${api_url}/students/updatestudent/${student._id}`, {
+    await fetch(`${api_url}/api/students/updatestudent/${student._id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "auth-token": localStorage.getItem('token')
+        "auth-token": localStorage.getItem("auth-token"),
       },
       body: JSON.stringify(updatedStudent),
     })
       .then((response) => response.json())
       .then((student) => {
         setLoading(false);
-        showAlert(student.msg, 'success');
-        fetchStuRecord(); // Refresh the student list
+        showAlert(student.msg, "success");
+        fetchStuRecord();
       })
       .catch((error) => {
         setLoading(false);
-        showAlert(error.message, 'danger');
-        console.log("Error enrolling student:", error);
+        showAlert(error.message, "danger");
+        console.error("Error enrolling student:", error);
       });
   };
 
   const deleteStudent = async (id) => {
     setLoading(true);
     try {
-      await fetch(`${api_url}/students/delete/${id}`, {
+      await fetch(`${api_url}/api/students/delete/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "auth-token": localStorage.getItem('token')
+          "auth-token": localStorage.getItem("auth-token"),
         },
       });
       setStudents(students.filter((student) => student._id !== id));
@@ -95,42 +90,59 @@ export default function AddStudent() {
   };
 
   return (
-    <div className="container mt-4">
-      <h2 className="text-center mb-4">New Registered Students for Enquiry </h2>
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="input-group">
-            <input type="text" className="form-control" placeholder="Search..." aria-label="Search" aria-describedby="search-button" value={searchQuery} onChange={handleSearchChange} />
-          </div>
-        </div>
+    <div className="max-w-6xl mx-auto px-4 py-6">
+      <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">
+        New Registered Students for Enquiry
+      </h2>
+
+      <div className="flex justify-center mb-6">
+        <input
+          type="text"
+          className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+        />
       </div>
-      <ul className="list-group mb-3">
-        {filteredStudents.filter(student => student.enrolled === false).length > 0 ? (
-          filteredStudents.filter(student => student.enrolled === false) // Filter for non-enrolled students
+
+      <div className="space-y-4">
+        {filteredStudents.filter((student) => !student.enrolled).length > 0 ? (
+          filteredStudents
+            .filter((student) => !student.enrolled)
             .map((student) => (
-              <li
+              <div
                 key={student._id}
-                className="list-group-item d-flex flex-column flex-md-row flex-wrap justify-content-between align-items-start my-2"
+                className="p-4 border border-gray-200 rounded-lg shadow-sm flex flex-col md:flex-row justify-between bg-white"
               >
-                <div className="mb-2 mb-md-0">
-                  <strong>Name:</strong> {student.name} <br />
-                  <strong>Email:</strong> {student.email} <br />
-                  <strong>Phone:</strong> {student.phone} <br />
-                  <strong>DOB:</strong> {student.dob} <br />
-                  <strong>Gender:</strong> {student.gender} <br />
-                  <strong>Course:</strong> {student.course} <br />
-                  <strong>Address:</strong> {student.address}
+                <div className="text-gray-700 space-y-1">
+                  <p><span className="font-semibold">Name:</span> {student.name}</p>
+                  <p><span className="font-semibold">Email:</span> {student.email}</p>
+                  <p><span className="font-semibold">Phone:</span> {student.phone}</p>
+                  <p><span className="font-semibold">DOB:</span> {student.dob}</p>
+                  <p><span className="font-semibold">Gender:</span> {student.gender}</p>
+                  <p><span className="font-semibold">Course:</span> {student.course}</p>
+                  <p><span className="font-semibold">Address:</span> {student.address}</p>
                 </div>
-                <div className="mt-2 mt-md-0">
-                  <button className="btn btn-success btn-sm me-2" onClick={() => enrollStudent(student)}>Add Student</button>
-                  <button className="btn btn-danger btn-sm" onClick={() => deleteStudent(student._id)}>Remove Student</button>
+                <div className="flex flex-col md:items-end gap-2 mt-4 md:mt-0">
+                  <button
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm transition"
+                    onClick={() => enrollStudent(student)}
+                  >
+                    Add Student
+                  </button>
+                  <button
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm transition"
+                    onClick={() => deleteStudent(student._id)}
+                  >
+                    Remove Student
+                  </button>
                 </div>
-              </li>
+              </div>
             ))
         ) : (
-          <p className="text-center my-3">No records to show</p>
+          <p className="text-center text-gray-500">No records to show</p>
         )}
-      </ul>
+      </div>
     </div>
   );
 }

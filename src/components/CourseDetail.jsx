@@ -1,7 +1,7 @@
-import React from 'react'
 import { useContext } from "react";
 import { useParams } from "react-router-dom";
-import courseContext from '../context/courseDetail/CourseContext'
+import courseContext from '../context/courseDetail/CourseContext';
+
 export default function CourseDetail() {
   const { courses } = useContext(courseContext);
   const { id } = useParams();
@@ -9,36 +9,43 @@ export default function CourseDetail() {
   const course = courses.find((course) => course.id === id);
 
   if (!course) {
-    return <div className="container my-5 text-center">Course not found!</div>;
+    return (
+      <div className="flex justify-center items-center min-h-[40vh] text-lg font-medium text-red-600">
+        Course not found!
+      </div>
+    );
   }
+
   return (
-    <div className="container py-5">
-      <div className="card shadow-lg mx-auto" style={{ maxWidth: "800px" }}>
-        <div className="card-body">
-          <h2 className="card-title text-center mb-3">{course.name} Course Details</h2>
+    <div className="flex justify-center px-4 py-10">
+      <div className="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-6">
+        <h2 className="text-2xl font-semibold text-center mb-6 text-blue-700">
+          {course.name} Course Details
+        </h2>
+        <div className="space-y-4 text-gray-800">
           <p>
-            <strong>Duration:</strong> {course.duration}
+            <span className="font-semibold">Duration:</span> {course.duration}
           </p>
           <p>
-            <strong>Fees:</strong> {course.fees}
+            <span className="font-semibold">Fees:</span> {course.fees}
           </p>
           <p>
-            <strong>Scholarship:</strong> {course.scholarship}
+            <span className="font-semibold">Scholarship:</span> {course.scholarship}
           </p>
           <p>
-            <strong>Eligibility:</strong> {course.eligibility}
+            <span className="font-semibold">Eligibility:</span> {course.eligibility}
           </p>
           <p>
-            <strong>Certificate:</strong> {course.certification}
+            <span className="font-semibold">Certificate:</span> {course.certification}
           </p>
           <p>
-            <strong>Description:</strong> {course.description}
+            <span className="font-semibold">Description:</span> {course.description}
           </p>
           <p>
-            <strong>Career Options:</strong> {course.careerProspects}
+            <span className="font-semibold">Career Options:</span> {course.careerProspects}
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

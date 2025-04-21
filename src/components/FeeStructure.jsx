@@ -1,64 +1,38 @@
-import React from 'react'
-
 export default function FeeStructure() {
+  const courses = [
+    { name: "BCA", duration: "3 years", fee: "₹6000 / semester", scholarship: "No Scholarship" },
+    { name: "B.Com", duration: "3 years", fee: "₹6000 / semester", scholarship: "No Scholarship" },
+    { name: "DCA", duration: "1 year", fee: "₹6000 / semester", scholarship: "No Scholarship" },
+    { name: "PGDCA", duration: "1 year", fee: "₹6000 / semester", scholarship: "No Scholarship" },
+    { name: "Tally ERP9", duration: "1 year", fee: "₹10000", scholarship: "No Scholarship" },
+    { name: "MS Office", duration: "6 months", fee: "₹6000", scholarship: "No Scholarship" },
+  ];
+
   return (
-    <div className='container'>
-      <h1 className='text-center my-5'>Fee Structure of Agrasen Institute Maihar</h1>
-      <table className="table table-bordered border-primary">
-        <thead className='table-primary'>
-          <tr>
-            <th scope="col">CN</th>
-            <th scope="col">Course</th>
-            <th scope="col">Duration</th>
-            <th scope="col">Fee</th>
-            <th scope="col">Scholorship</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">1</th>
-            <td>BCA</td>
-            <td>3 years</td>
-            <td>6000 semester</td>
-            <td>No Scholorship</td>
-          </tr>
-          <tr>
-            <th scope="row">2</th>
-            <td>B.com</td>
-            <td>3 years</td>
-            <td>6000 semester</td>
-            <td>No Scholorship</td>
-          </tr>
-          <tr>
-            <th scope="row">3</th>
-            <td>DCA</td>            
-            <td>1 year</td>
-            <td>6000 semester</td>
-            <td>No Scholorship</td>
-          </tr>
-          <tr>
-            <th scope="row">4</th>
-            <td>PGDCA</td>
-            <td>1 year</td>
-            <td>6000 semester</td>
-            <td>No Scholorship</td>
-          </tr>
-          <tr>
-            <th scope="row">5</th>
-            <td>Tally ERP9</td>
-            <td>1 year</td>
-            <td>10000</td>
-            <td>No Scholorship</td>
-          </tr>
-          <tr>
-            <th scope="row">6</th>
-            <td>MS Office</td>
-            <td>6 Months</td>      
-            <td>6000</td>      
-            <td>No Scholorship</td>      
-          </tr>
-        </tbody>
-      </table>
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
+        Fee Structure of Akshay Institutes Maihar
+      </h1>
+
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {courses.map((course, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow border border-gray-200 p-6"
+          >
+            <div className="text-indigo-600 font-semibold text-xl mb-2">{course.name}</div>
+            <p className="text-gray-600 mb-1">
+              <span className="font-medium text-gray-700">Duration:</span> {course.duration}
+            </p>
+            <p className="text-gray-600 mb-1">
+              <span className="font-medium text-gray-700">Fee:</span> {course.fee}
+            </p>
+            <p className="text-gray-600">
+              <span className="font-medium text-gray-700">Scholarship:</span> {course.scholarship}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
-  )
+  );
 }

@@ -1,146 +1,264 @@
-import { React, useState, useRef, useContext } from 'react'
-import { json, useNavigate } from 'react-router-dom';
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import alertContext from "../context/alert/alertContext";
 import loadingContext from "../context/loading/loadingContext";
 
 export default function Login() {
-    const [credentials, setCredentials] = useState({ email: "", password: "", otp: "", title: "Login" });
-    const [errorMsg, setErrorMsg] = useState("An unknownn error occured");
-    const API_URL = import.meta.env.VITE_URL;
-    const navigate = useNavigate();
-    const ref = useRef(null);
-    const refClose = useRef(null);
-    const alertcontext = useContext(alertContext);
-    const loadingcontext = useContext(loadingContext);
-    const { showAlert } = alertcontext;
-    const { setLoading } = loadingcontext;
+  const [credentials, setCredentials] = useState({
+    email: "",
+    password: "",
+    otp: "",
+    userType: "Admin",
+  });
+  const [errorMsg, setErrorMsg] = useState("An unknown error occurred");
+  const [showOtpModal, setShowOtpModal] = useState(false); // 🔑 Modal control
+  const API_URL = import.meta.env.VITE_URL;
+  const navigate = useNavigate();
+  const { showAlert } = useContext(alertContext);
+  const { setLoading } = useContext(loadingContext);
+  const { email, password, otp, userType } = credentials;
+  const token = localStorage.getItem("auth-token");
 
-    const { email, otp, password, title } = credentials;
-
-    //api request to login
-    const handleSubmit = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${API_URL}/auth/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email: email, password: password, otp: otp }),
-            });
-
-            const json = await response.json();
-            setErrorMsg(json.msg)
-            setLoading(false);
-            if (json.success) {
-                refClose.current.click();// close the modal    
-                //Save the auth token and redirect to adming page
-                localStorage.setItem('token', json.authToken)
-                navigate('/admin')
-                showAlert(json.msg, "success");
-                setCredentials({ email: "", password: "", otp: "", title: "Login" });
-            } else {
-                showAlert(json.msg, "danger");
-            }
-        } catch (error) {
-            setLoading(false); // Ensure loading state is always reset
-            // Handle network or unexpected errors
-            console.error("Login failed:", error);
-            showAlert(errorMsg, "danger");
-        }
-    };
-
-    //api request to send otp
-    const sendOtp = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${API_URL}/auth/sendotp`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: email, password: password, title: title }),
-            });
-
-            const resStatus = await response.json();
-            setErrorMsg(resStatus.msg)
-            setLoading(false);
-            if (resStatus.success) {
-                ref.current.click(); //open modal to enter otp
-                showAlert(resStatus.msg, 'success')                
-            } else {
-                showAlert(resStatus.msg, 'danger');
-            }
-        } catch (error) {
-            setLoading(false);
-            // Handle network or unexpected errors
-            console.error("Login failed:", error);
-            showAlert(errorMsg, "danger");            
-        }
+  const handleSubmit = async () => {
+    setLoading(true);
+    let endpoint = "/api/auth/login";
+    if (userType === "Admin") {
+      endpoint = "/api/auth/login";
+    } else if (userType === "Student") {
+      endpoint = "/api/handle-students/login";
+    } else if (userType === "Faculty") {
+      endpoint = "/api/faculty/login";
     }
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": token,
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    //handle input change
-    const onChange = (e) => {
-        setCredentials({ ...credentials, [e.target.name]: e.target.value });
+      const json = await response.json();
+      setLoading(false);
+      setErrorMsg(json.message);
+      
+      if (response.ok) {        
+        setShowOtpModal(false); // 🔒 Hide modal
+        localStorage.setItem("auth-token", json.authToken);
+        showAlert(json.message, "success");
+        setCredentials({
+          email: "",
+          password: "",
+          otp: "",
+          userType: userType,
+        });
+
+        if (userType === "Admin") navigate("/admin");
+        else if (userType === "Student") navigate(`/student/${json.student.id}`);
+        else if (userType === "Faculty") navigate(`/faculty/${json.faculty.id}`);
+      } else {
+        showAlert(json.message, "danger");
+      }
+    } catch (error) {
+      setLoading(false);
+      setErrorMsg(error.message);
+      showAlert(errorMsg, "danger");
+      console.log(error)
     }
+  };
 
-    //redirect to change password page
-    const changePassword = () => {
-        navigate('/changePassword');
+  const sendOtp = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/otp/sendotp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, userType }), // use `userType` instead of `password` & `userType`
+      });
+
+      const resData = await response.json();
+      setLoading(false);
+      setErrorMsg(resData.message); // updated key: message
+
+      if (response.ok) {
+        setShowOtpModal(true); // 🔓 Show OTP modal
+        showAlert(resData.message, "success");
+        localStorage.setItem("auth-token", resData.authToken); // use short-lived token
+      } else {
+        showAlert(resData.message || "Failed to send OTP", "danger");
+      }
+    } catch (error) {
+      setLoading(false);
+      setErrorMsg(error.message);
+      showAlert(error.message, "danger");
     }
+  };
 
-    //redirect to change email page
-    const changeEmail = () => {
-        navigate('/changeEmail');
+  const verifyOtp = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("auth-token");
+      const response = await fetch(`${API_URL}/api/otp/verifyotp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": token,
+        },
+        body: JSON.stringify({ email, userType, otp }), // assuming `otp` is from user input
+      });
+
+      const resData = await response.json();
+      setLoading(false);
+      setErrorMsg(resData.message);
+
+      if (response.ok) {
+        showAlert(resData.message, "success");
+        localStorage.setItem("auth-token", resData.authToken); // store long-lived token
+        setShowOtpModal(false); // close modal
+        await handleSubmit();
+      } else {
+        showAlert(resData.message || "OTP verification failed", "danger");
+      }
+    } catch (error) {
+      setLoading(false);
+      setErrorMsg(error.message);
+      showAlert(error.message, "danger");
+      console.log(error)
     }
+  };
 
-    return (
-        <>
-            <div className='container'>
-                <h2 className='text-center my-5'>Login As a Admin</h2>
-                <div className='container' style={{ maxWidth: "600px" }}>
-                    <form>
-                        <div className="mb-3">
-                            <label htmlFor="email" className="form-label">Email address</label>
-                            <input type="email" className="form-control" id="email" name='email' value={credentials.email} onChange={onChange} aria-describedby="emailHelp" required />
-                        </div>
-                        <div className="mb-3">
-                            <label htmlFor="password" className="form-label">Password</label>
-                            <input type="password" className="form-control" id="password" name='password' value={credentials.password} onChange={onChange} required />
-                        </div>
-                        <button type="button" className="btn btn-primary mx-2 my-2" onClick={sendOtp}>Login</button>
-                        <button className="btn btn-primary mx-2 my-2" onClick={changePassword}>Change Password</button>
-                        <button className="btn btn-primary my-2" onClick={changeEmail}>Change Email</button>
-                    </form>
-                </div>
-            </div>
+  const onChange = (e) =>
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
 
-            {/* Modal */}
-            <button ref={ref} type="button" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                Launch demo modal
+  const changePassword = () => navigate("/changePassword");
+  const changeEmail = () => navigate("/changeEmail");
+
+  return (
+    <>
+      <div className="flex justify-center items-center h-screen bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100">
+        <div className="w-full max-w-md p-8 bg-white shadow-xl rounded-xl">
+          <h2 className="text-2xl font-bold text-center mb-6 text-gray-700">
+            Login
+          </h2>
+          <div className="mb-4">
+            <label
+              htmlFor="userType"
+              className="block mb-1 font-semibold text-gray-600"
+            >
+              Login as
+            </label>
+            <select
+              name="userType"
+              id="userType"
+              className="w-full border border-gray-300 px-3 py-2 rounded-md"
+              value={userType}
+              onChange={onChange}
+            >
+              <option>Admin</option>
+              <option>Student</option>
+              <option>Faculty</option>
+            </select>
+          </div>
+          <div className="mb-4">
+            <label
+              htmlFor="email"
+              className="block mb-1 font-semibold text-gray-600"
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              value={email}
+              onChange={onChange}
+              className="w-full border border-gray-300 px-3 py-2 rounded-md"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              htmlFor="password"
+              className="block mb-1 font-semibold text-gray-600"
+            >
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              value={password}
+              onChange={onChange}
+              className="w-full border border-gray-300 px-3 py-2 rounded-md"
+              required
+            />
+          </div>
+          <div className="flex justify-between flex-wrap gap-2">
+            <button
+              type="button"
+              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+              onClick={sendOtp}
+            >
+              Send OTP
             </button>
-            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel">
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h3 className="modal-title fs-5" id="exampleModalLabel">Verify OTP sent to your email</h3>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div className="modal-body">
-                            <form>
-                                <div className="mb-3">
-                                    <label htmlFor="otp" className="form-label">Enter OTP</label>
-                                    <input type="number" className="form-control" id="otp" name='otp' value={otp} onChange={onChange} maxLength={6} />
-                                </div>
-                            </form>
-                        </div>
-                        <div className="modal-footer">
-                            <button ref={refClose} type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button disabled={otp.length < 5} type="button" className="btn btn-primary" onClick={handleSubmit}>Verify OTP</button>
-                        </div>
-                    </div>
-                </div>
+            <button
+              className="text-sm text-blue-600 hover:underline"
+              onClick={changePassword}
+            >
+              Change Password
+            </button>
+            <button
+              className="text-sm text-blue-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={changeEmail}
+              disabled={userType === "Student" || userType === "Faculty"}
+            >
+              Change Email
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Tailwind OTP Modal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+          <div className="bg-white rounded-xl shadow-lg w-11/12 max-w-md p-6 relative animate-fade-in">
+            <h3 className="text-lg font-bold text-indigo-700 mb-4">
+              Verify OTP
+            </h3>
+            <label
+              htmlFor="otp"
+              className="block mb-2 font-medium text-gray-700"
+            >
+              Enter OTP sent to your email:
+            </label>
+            <input
+              type="number"
+              name="otp"
+              id="otp"
+              value={otp}
+              onChange={onChange}
+              maxLength={6}
+              className="w-full border border-gray-300 px-3 py-2 rounded-md mb-4"
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowOtpModal(false)}
+                className="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={verifyOtp}
+                disabled={otp.length < 5}
+                className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                Verify OTP
+              </button>
             </div>
-        </>
-    )
+          </div>
+        </div>
+      )}
+    </>
+  );
 }

@@ -1,5 +1,4 @@
 import { useState, useContext } from "react";
-import React from 'react'
 import alertContext from "../context/alert/alertContext";
 import loadingContext from "../context/loading/loadingContext";
 
@@ -11,11 +10,10 @@ export default function EnrollNow() {
   const { setLoading } = loadingcontext;
   const [newStudent, setNewStudent] = useState({ name: "", dob: "", email: "", phone: "", gender: "", course: "", address: "", enrolled: false });
 
-  //enrolling student for admission enquiry
   const enrollStudent = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${api_url}/students/enrollstudent`, {
+      const response = await fetch(`${api_url}/api/students/enrollstudent`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,67 +37,58 @@ export default function EnrollNow() {
   }
 
   return (
-    <div className='container' style={{ maxWidth: "800px" }}>
-      <h1 className='text-center my-5'>Register for enquiry</h1>
-      <form>
-        <div className="form-group row my-2">
-          <label htmlFor="fullname" className="col-sm-2 col-form-label">Full Name</label>
-          <div className="col-sm-10">
-            <input type="text" className="form-control" id="fullname" placeholder="Full Name" value={newStudent.name} onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })} />
-          </div>
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-3xl font-semibold text-center text-blue-700 mb-6">Register for Enquiry</h1>
+      <form className="space-y-4">
+        <div>
+          <label htmlFor="fullname" className="block font-medium mb-1">Full Name</label>
+          <input type="text" id="fullname" placeholder="Full Name" value={newStudent.name} onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })} className="w-full border border-gray-300 rounded px-3 py-2" />
         </div>
-        <div className="form-group row my-2">
-          <label htmlFor="inputdob" className="col-sm-2 col-form-label">Date of Birth</label>
-          <div className="col-sm-10">
-            <input type="date" className="form-control" id="inputdob" placeholder="Date of Birth" value={newStudent.dob} onChange={(e) => setNewStudent({ ...newStudent, dob: e.target.value })} />
-          </div>
+
+        <div>
+          <label htmlFor="inputdob" className="block font-medium mb-1">Date of Birth</label>
+          <input type="date" id="inputdob" value={newStudent.dob} onChange={(e) => setNewStudent({ ...newStudent, dob: e.target.value })} className="w-full border border-gray-300 rounded px-3 py-2" />
         </div>
-        <div className="form-group row my-2">
-          <label htmlFor="gender" className="col-sm-2 col-form-label">Gender</label>
-          <div className="col-sm-10">
-            <select id="dender" className="form-select" defaultValue={newStudent.gender} onChange={(e) => setNewStudent({ ...newStudent, gender: e.target.value })}>
-              <option value="" disabled>Select gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </select>
-          </div>
+
+        <div>
+          <label htmlFor="gender" className="block font-medium mb-1">Gender</label>
+          <select id="gender" value={newStudent.gender} onChange={(e) => setNewStudent({ ...newStudent, gender: e.target.value })} className="w-full border border-gray-300 rounded px-3 py-2">
+            <option value="" disabled>Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
         </div>
-        <div className="form-group row my-2">
-          <label htmlFor="course" className="col-sm-2 col-form-label">Course</label>
-          <div className="col-sm-10">
-            <select id="course" className="form-select" defaultValue={newStudent.course} onChange={(e) => setNewStudent({ ...newStudent, course: e.target.value })}>
-              <option value="" disabled>Select course</option>
-              <option value="BCA">BCA</option>
-              <option value="B.com">B.com</option>
-              <option value="DCA">DCA</option>
-              <option value="PGDCA">PGDCA</option>
-              <option value="Tally">Tally</option>
-              <option value="MS Office">MS Office</option>
-            </select>
-          </div>
+
+        <div>
+          <label htmlFor="course" className="block font-medium mb-1">Course</label>
+          <select id="course" value={newStudent.course} onChange={(e) => setNewStudent({ ...newStudent, course: e.target.value })} className="w-full border border-gray-300 rounded px-3 py-2">
+            <option value="" disabled>Select course</option>
+            <option value="BCA">BCA</option>
+            <option value="B.com">B.com</option>
+            <option value="DCA">DCA</option>
+            <option value="PGDCA">PGDCA</option>
+            <option value="Tally">Tally</option>
+            <option value="MS Office">MS Office</option>
+          </select>
         </div>
-        <div className="form-group row my-2">
-          <label htmlFor="inputphone" className="col-sm-2 col-form-label">Phone No</label>
-          <div className="col-sm-10">
-            <input type="number" className="form-control" id="inputphone" placeholder="Phone No" value={newStudent.phone} onChange={(e) => setNewStudent({ ...newStudent, phone: e.target.value })} />
-          </div>
+      
+        <div>
+          <label htmlFor="inputphone" className="block font-medium mb-1">Phone No</label>
+          <input type="tel" id="inputphone" placeholder="Phone No" value={newStudent.phone} onChange={(e) => setNewStudent({ ...newStudent, phone: e.target.value })} className="w-full border border-gray-300 rounded px-3 py-2" />
         </div>
-        <div className="form-group row my-2">
-          <label htmlFor="inputemail" className="col-sm-2 col-form-label">Email</label>
-          <div className="col-sm-10">
-            <input type="email" className="form-control" id="inputemail" placeholder="Email" value={newStudent.email} onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}/>
-          </div>
+
+        <div>
+          <label htmlFor="inputemail" className="block font-medium mb-1">Email</label>
+          <input type="email" id="inputemail" placeholder="Email" value={newStudent.email} onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })} className="w-full border border-gray-300 rounded px-3 py-2" />
         </div>
-        <div className="form-group row my-2">
-          <label htmlFor="address" className="col-sm-2 col-form-label">Address</label>
-          <div className="col-sm-10">
-            <textarea className="form-control" id="address" rows="3" placeholder="Address" value={newStudent.address} onChange={(e) => setNewStudent({ ...newStudent, address: e.target.value })}></textarea>
-          </div>
+
+        <div>
+          <label htmlFor="address" className="block font-medium mb-1">Address</label>
+          <textarea id="address" rows="3" placeholder="Address" value={newStudent.address} onChange={(e) => setNewStudent({ ...newStudent, address: e.target.value })} className="w-full border border-gray-300 rounded px-3 py-2"></textarea>
         </div>
-        <div className="form-group row">
-          <div className="d-flex justify-content-center my-2">
-            <button type="button" className="btn btn-primary px-5" onClick={enrollStudent}>Register now</button>
-          </div>
+
+        <div className="text-center">
+          <button type="button" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded" onClick={enrollStudent}>Register Now</button>
         </div>
       </form>
     </div>
